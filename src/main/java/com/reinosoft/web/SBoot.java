@@ -15,18 +15,31 @@ public class SBoot {
     private static final String SERVLET_NAME = "dispatcher";
     private static final String CONTEXT_PATH = "/*";
 
+    private static Tomcat tomcat;
+
     private SBoot() {}
 
     public static void run() {
-
-        Logger.getLogger("org.apache").setLevel(Level.OFF);
         SLogger.printBanner();
-        SLogger.log(SBoot.class, "Starting Application");
-        final var startUpInitTime = System.currentTimeMillis();
+        SLogger.info(SBoot.class, "Starting Application");
 
-        final var tomcat = new Tomcat();
+        final var startUpInitTime = System.currentTimeMillis();
+        startTomcat();
+        final var startupEndTime = System.currentTimeMillis();
+
+        SLogger.info(SBoot.class, "ReinoSoft Web Application started in: " + (startupEndTime - startUpInitTime) + "ms");
+        tomcat.getServer().await();
+    }
+
+    private static void startTomcat() {
+        disableApacheLogs();
+
+        tomcat = new Tomcat();
+
         final var connector = new Connector();
         connector.setPort(8080);
+        connector.setThrowOnFailure(true);
+
         tomcat.setConnector(connector);
 
         final var context = tomcat.addContext("", new File(".").getAbsolutePath());
@@ -36,12 +49,13 @@ public class SBoot {
         try {
             tomcat.start();
         } catch (LifecycleException e) {
-            e.printStackTrace();
-        } finally {
-            final var startupEndTime = System.currentTimeMillis();
-            SLogger.log(SBoot.class, "ReinoSoft Web Application started in: " + (startupEndTime - startUpInitTime) + "ms");
-            tomcat.getServer().await();
+            SLogger.error(SBoot.class, e);
+            System.exit(1);
         }
+    }
+
+    private static void disableApacheLogs() {
+        Logger.getLogger("org.apache").setLevel(Level.OFF);
     }
 
     public static String getVersion() {

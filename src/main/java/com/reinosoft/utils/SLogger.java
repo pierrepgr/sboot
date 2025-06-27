@@ -2,33 +2,65 @@ package com.reinosoft.utils;
 
 import com.reinosoft.banner.Banner;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
+import static com.reinosoft.utils.LogType.*;
 import static java.lang.System.out;
 
 public class SLogger {
-
-    private static final String GREEN = "\u001B[32m";
-    private static final String YELLOW = "\u001B[33m";
-    private static final String WHITE = "\u001B[37m";
-    private static final String RESET = "\u001B[0m";
-
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private static final StringWriter sw;
+    private static final PrintWriter pw;
+
+    static {
+        sw = new StringWriter();
+        pw = new PrintWriter(sw);
+    }
 
     private SLogger() {
 
     }
 
-    public static void log(final Class<?> clazz, final String message) {
+    public static void error(final Class<?> clazz, final String message) {
+        log(ERROR, clazz, message);
+    }
+
+    public static void error(final Class<?> clazz, final Exception exception) {
+        exception.printStackTrace(pw);
+        log(ERROR, clazz, sw.toString());
+    }
+
+
+    public static void info(final Class<?> clazz, final String message) {
+        log(INFO, clazz, message);
+    }
+
+    public static void warning(final Class<?> clazz, final String message) {
+        log(WARNING, clazz, message);
+    }
+
+    public static void success(final Class<?> clazz, final String message) {
+        log(SUCCESS, clazz, message);
+    }
+
+    private static void log(final LogType logType, final Class<?> clazz, final String message) {
         final var dateTime = LocalDateTime.now().format(DATE_TIME_FORMAT);
-        out.printf(GREEN + "%15s " + YELLOW + "%-30s: " + WHITE + "%s%n" + RESET, dateTime, clazz.getName(), message);
+
+        if (logType == ERROR) {
+            out.printf(String.format("%s%15s %8s %-30s: %s%n%s", ERROR.getColorCode(), dateTime, logType, clazz.getName(), message, DEFAULT.getColorCode()));
+        } else {
+            out.printf(String.format("%s%15s %s%8s %s %-30s: %s%s%n%s", SUCCESS.getColorCode(), dateTime, logType.getColorCode(), logType, WARNING.getColorCode(), clazz.getName(), DEFAULT.getColorCode(), message, DEFAULT.getColorCode()));
+        }
     }
 
     public static void printBanner() {
-        out.printf(YELLOW);
+        out.printf(SUCCESS.getColorCode());
         out.println(Banner.getBanner());
-        out.println(RESET);
+        out.println(DEFAULT.getColorCode());
     }
 
 }
