@@ -1,12 +1,16 @@
 package com.reinosoft.core.cache;
 
+import java.lang.reflect.Method;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class RestControllersMap {
 
-    private static final ConcurrentHashMap<String, RestControllerImpl> restControllers = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, RestControllerImpl> restControllers = new ConcurrentHashMap<>();
 
-    public static boolean add(final String key, final RestControllerImpl value) {
+    private RestControllersMap() {}
+
+    public static void add(final String key, final RestControllerImpl value) {
         if (key == null || value == null) {
             throw new IllegalArgumentException("Key and value must not be null");
         }
@@ -15,31 +19,35 @@ public class RestControllersMap {
             throw new IllegalArgumentException("Key already exists: " + key);
         }
 
-        return restControllers.putIfAbsent(key, value) == null;
+        restControllers.putIfAbsent(key, value);
+    }
+
+    public static ConcurrentMap<String, RestControllerImpl> getRestControllers() {
+        return restControllers;
     }
 
     public static class RestControllerImpl {
 
         private final String path;
+        private final Method method;
         private final String className;
-        private final String methodName;
         private final HttpMethod httpMethod;
 
         private RestControllerImpl(final String path,
+                                   final Method method,
                                    final String className,
-                                   final String methodName,
                                    final HttpMethod httpMethod) {
             this.path = path;
+            this.method = method;
             this.className = className;
-            this.methodName = methodName;
             this.httpMethod = httpMethod;
         }
 
         public static RestControllerImpl of(final String path,
+                                            final Method method,
                                             final String className,
-                                            final String methodName,
                                             final HttpMethod httpMethod) {
-            return new RestControllerImpl(path, className, methodName, httpMethod);
+            return new RestControllerImpl(path, method, className , httpMethod);
         }
 
         public String getPath() {
@@ -48,8 +56,8 @@ public class RestControllersMap {
         public String getClassName() {
             return className;
         }
-        public String getMethodName() {
-            return methodName;
+        public Method getMethod() {
+            return method;
         }
         public HttpMethod getHttpMethod() {
             return httpMethod;

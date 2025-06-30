@@ -51,7 +51,7 @@ public abstract class Extractor {
         showLog(method.getName(), className);
         final var path = requestPath + validPath(annotationPath);
 
-        RestControllersMap.add(String.format("%s-%s", path, httpMethod).toLowerCase(), RestControllerImpl.of(path, className, method.getName(), httpMethod));
+        RestControllersMap.add(String.format("%s-%s", path, httpMethod).toLowerCase(), RestControllerImpl.of(path, method, className, httpMethod));
         SLogger.info(Extractor.class, String.format("Registered: %s: %s [%s.%s]", httpMethod, path, className, method.getName()));
     }
 
