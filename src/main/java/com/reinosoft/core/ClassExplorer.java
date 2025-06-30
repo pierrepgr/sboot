@@ -31,7 +31,6 @@ public class ClassExplorer {
                 if (line.endsWith(".class")) {
                     final var className = String.format("%s.%s", packageName, line.replace(".class", ""));
                     classNames.add(className);
-                    SLogger.info(ClassExplorer.class, "Found class: " + className);
                 } else {
                     classNames.addAll(packageExplorer(packageName + "." + line));
                 }

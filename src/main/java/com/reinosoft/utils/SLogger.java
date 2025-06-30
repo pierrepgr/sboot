@@ -51,9 +51,9 @@ public class SLogger {
         final var dateTime = LocalDateTime.now().format(DATE_TIME_FORMAT);
 
         if (logType == ERROR) {
-            out.printf(String.format("%s%15s %8s %-30s: %s%n%s", ERROR.getColorCode(), dateTime, logType, clazz.getName(), message, DEFAULT.getColorCode()));
+            out.printf(String.format("%s%12s %8s ---%-35s: %s%n%s", ERROR.getColorCode(), dateTime, logType, clazz.getName(), message, DEFAULT.getColorCode()));
         } else {
-            out.printf(String.format("%s%15s %s%8s %s %-30s: %s%s%n%s", SUCCESS.getColorCode(), dateTime, logType.getColorCode(), logType, WARNING.getColorCode(), clazz.getName(), DEFAULT.getColorCode(), message, DEFAULT.getColorCode()));
+            out.printf(String.format("%s%12s %s%8s ---%s %-35s: %s%s%n%s", SUCCESS.getColorCode(), dateTime, logType.getColorCode(), logType, WARNING.getColorCode(), clazz.getName(), DEFAULT.getColorCode(), message, DEFAULT.getColorCode()));
         }
     }
 
