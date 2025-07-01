@@ -15,8 +15,8 @@ public class DispatchServlet extends HttpServlet {
     @Serial
     private static final long serialVersionUID = -6643960782980263275L;
 
-    private final RequestHandler requestHandler;
-    private final ResponseHandler responseHandler;
+    private final transient RequestHandler requestHandler;
+    private final transient ResponseHandler responseHandler;
 
     public DispatchServlet(RequestHandler requestHandler, ResponseHandler responseHandler) {
         this.requestHandler = requestHandler;
@@ -27,7 +27,7 @@ public class DispatchServlet extends HttpServlet {
     protected void service(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         try {
             final var response = this.requestHandler.handleRequest(req);
-            this.responseHandler.handleResponse(response, resp.getWriter());
+            this.responseHandler.handleResponse(response, resp, resp.getWriter());
         } catch (MethodNotFoundException e) {
             SLogger.error(this.getClass(), e);
             resp.sendError(404, "Not Found");

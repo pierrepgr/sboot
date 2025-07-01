@@ -2,30 +2,26 @@ package com.reinosoft.web.impl;
 
 import com.reinosoft.core.cache.RestControllersMap.RestControllerImpl;
 import com.reinosoft.exception.RequestHandlerException;
-import com.reinosoft.web.MethodResolver;
 import com.reinosoft.web.RequestHandler;
-import com.reinosoft.web.RestControllerInstanceResolver;
+import com.reinosoft.web.ComponentInstanceResolver;
 import com.reinosoft.web.RestControllerResolver;
 import jakarta.servlet.http.HttpServletRequest;
 
 public class RequestHandlerImpl implements RequestHandler {
 
-    private final MethodResolver methodResolver;
     private final RestControllerResolver restControllerResolver;
-    private final RestControllerInstanceResolver restControllerInstanceResolver;
+    private final ComponentInstanceResolver componentInstanceResolver;
 
-    public RequestHandlerImpl(MethodResolver methodResolver,
-                              RestControllerResolver restControllerResolver,
-                              RestControllerInstanceResolver restControllerInstanceResolver) {
-        this.methodResolver = methodResolver;
+    public RequestHandlerImpl(RestControllerResolver restControllerResolver,
+                              ComponentInstanceResolver componentInstanceResolver) {
         this.restControllerResolver = restControllerResolver;
-        this.restControllerInstanceResolver = restControllerInstanceResolver;
+        this.componentInstanceResolver = componentInstanceResolver;
     }
 
     @Override
     public Object handleRequest(HttpServletRequest request) throws RequestHandlerException {
         final var restControllerImpl = getRestController(request);
-        final var restControllerInstance = restControllerInstanceResolver.getRestControllerInstance(restControllerImpl.getClassName()).orElseThrow(() -> new RequestHandlerException(String.format("Controller instance not found for class: %s", restControllerImpl.getClassName())));
+        final var restControllerInstance = componentInstanceResolver.getComponentInstance(restControllerImpl.getClassName()).orElseThrow(() -> new RequestHandlerException(String.format("Controller instance not found for class: %s", restControllerImpl.getClassName())));
 
         try {
            return restControllerImpl.getMethod().invoke(restControllerInstance);

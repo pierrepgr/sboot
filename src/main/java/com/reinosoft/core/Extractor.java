@@ -4,6 +4,7 @@ import com.reinosoft.core.cache.RestControllersMap;
 import com.reinosoft.core.cache.RestControllersMap.HttpMethod;
 import com.reinosoft.core.cache.RestControllersMap.RestControllerImpl;
 import com.reinosoft.utils.SLogger;
+import com.reinosoft.web.SBoot;
 import com.reinosoft.web.annotations.*;
 
 import java.lang.annotation.Annotation;
@@ -19,7 +20,7 @@ public abstract class Extractor {
 
     private Extractor() {}
 
-    public static void exctract(final Class<?> clazz) {
+    public static List<String> exctract(final Class<?> clazz) {
         final var classes = ClassExplorer.retrieveClasses(clazz);
 
         for (final var className : classes)
@@ -31,6 +32,8 @@ public abstract class Extractor {
                             extractMethods(className);
                         }
                     });
+
+        return classes;
     }
 
     private static void extractMethods(final String className) {
@@ -51,14 +54,14 @@ public abstract class Extractor {
         showLog(method.getName(), className);
         final var path = requestPath + validPath(annotationPath);
 
-        RestControllersMap.add(String.format("%s-%s", path, httpMethod).toLowerCase(), RestControllerImpl.of(path, method, className, httpMethod));
+        RestControllersMap.add(String.format("%s%s%s", httpMethod, SBoot.getContextPath(), path).toLowerCase(), RestControllerImpl.of(path, method, className, httpMethod));
         SLogger.info(Extractor.class, String.format("Registered: %s: %s [%s.%s]", httpMethod, path, className, method.getName()));
     }
 
     private static String validPath(final String value) {
         String validPath = value;
 
-        if (value == null || value.isBlank()) return "/";
+        if (value == null || value.isBlank()) return "";
 
         if (!value.startsWith("/")) validPath = String.format("/%s", validPath);
         if (value.endsWith("/")) validPath = validPath.substring(0, validPath.length() - 1);

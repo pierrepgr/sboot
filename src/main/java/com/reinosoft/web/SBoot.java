@@ -4,7 +4,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reinosoft.core.Extractor;
 import com.reinosoft.exception.BusinessException;
 import com.reinosoft.utils.SLogger;
-import com.reinosoft.web.impl.*;
+import com.reinosoft.web.impl.RequestHandlerImpl;
+import com.reinosoft.web.impl.ResponseHandlerImpl;
+import com.reinosoft.web.impl.ComponentInstanceResolverImpl;
+import com.reinosoft.web.impl.RestControllerResolverImpl;
 import org.apache.catalina.LifecycleException;
 import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
@@ -15,9 +18,12 @@ import java.nio.file.Files;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_TRAILING_TOKENS;
+
 public class SBoot {
     private static final String SBOOT_VERSION = "1.0.0";
     private static final String PATTERN = "/*";
+    private static final String CONTEXT_PATH = "/api";
     private static final int PORT = 8080;
 
     private static final Tomcat tomcat = new Tomcat();
@@ -33,7 +39,9 @@ public class SBoot {
 
         SLogger.info(SBoot.class, "Starting Application");
 
-        Extractor.exctract(clazz);
+        final var componentInstanceResolver = getComponentInstanceResolver();
+        componentInstanceResolver.createComponentInstance(Extractor.exctract(clazz));
+
         initialize();
 
         final var startupEndTime = System.currentTimeMillis();
@@ -78,19 +86,28 @@ public class SBoot {
         }
     }
 
+    private static DispatchServlet getDispatchServlet() {
+        final var mapper = new ObjectMapper();
+        mapper.enable(FAIL_ON_TRAILING_TOKENS);
+
+        final var restControllerResolver = new RestControllerResolverImpl();
+        final var restControllerInstanceResolver = new ComponentInstanceResolverImpl();
+
+        final var responseHandler = new ResponseHandlerImpl(mapper);
+        final var requestHandler = new RequestHandlerImpl(restControllerResolver, restControllerInstanceResolver);
+
+        return new DispatchServlet(requestHandler, responseHandler);
+    }
+
+    private static ComponentInstanceResolver getComponentInstanceResolver() {
+        return new ComponentInstanceResolverImpl();
+    }
+
     public static String getVersion() {
         return SBOOT_VERSION;
     }
 
-    private static DispatchServlet getDispatchServlet() {
-        final var mapper = new ObjectMapper();
-        final var methodResolver = new MethodResolverImpl();
-        final var restControllerResolver = new RestControllerResolverImpl();
-        final var restControllerInstanceResolver = new RestControllerInstanceResolverImpl();
-
-        final var responseHandler = new ResponseHandlerImpl(mapper);
-        final var requestHandler = new RequestHandlerImpl(methodResolver, restControllerResolver, restControllerInstanceResolver);
-
-        return new DispatchServlet(requestHandler, responseHandler);
+    public static String getContextPath() {
+        return CONTEXT_PATH;
     }
 }

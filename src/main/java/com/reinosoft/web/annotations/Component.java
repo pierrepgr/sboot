@@ -8,7 +8,5 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Target(TYPE)
 @Retention(RUNTIME)
-public @interface RequestMapping {
-
-    String value() default "";
+public @interface Component {
 }
