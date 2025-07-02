@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.reinosoft.exception.ResponseHandlerException;
 import com.reinosoft.utils.SLogger;
 import com.reinosoft.web.ResponseHandler;
+import com.reinosoft.web.error.Error;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.PrintWriter;
@@ -38,6 +39,18 @@ public class ResponseHandlerImpl implements ResponseHandler {
                     responseWriter.println(mapper.writeValueAsString(response));
                 }
             }
+        } catch (JsonProcessingException e) {
+            SLogger.error(ResponseHandlerImpl.class, e);
+            throw new ResponseHandlerException(e);
+        }
+    }
+
+    @Override
+    public void handleResponseError(Error error, HttpServletResponse resp, PrintWriter writer) throws ResponseHandlerException {
+        try {
+            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            resp.setHeader(CONTENT_TYPE, CONTENT_TYPE_JSON);
+            writer.println(mapper.writeValueAsString(error));
         } catch (JsonProcessingException e) {
             SLogger.error(ResponseHandlerImpl.class, e);
             throw new ResponseHandlerException(e);

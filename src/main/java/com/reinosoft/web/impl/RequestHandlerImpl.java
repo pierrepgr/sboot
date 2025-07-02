@@ -2,6 +2,7 @@ package com.reinosoft.web.impl;
 
 import com.reinosoft.core.cache.RestControllersMap.RestControllerImpl;
 import com.reinosoft.exception.RequestHandlerException;
+import com.reinosoft.exception.RestControllerNotFoundException;
 import com.reinosoft.web.RequestHandler;
 import com.reinosoft.web.ComponentInstanceResolver;
 import com.reinosoft.web.RestControllerResolver;
@@ -33,6 +34,6 @@ public class RequestHandlerImpl implements RequestHandler {
     private RestControllerImpl getRestController(HttpServletRequest request) {
         String key = request.getMethod() + request.getRequestURI();
         return restControllerResolver.findControllerByKey(key)
-                .orElseThrow(() -> new RequestHandlerException(String.format("Controller not found for key: %s", key.toLowerCase())));
+                .orElseThrow(() -> new RestControllerNotFoundException(String.format("Controller not found for key: %s", key.toLowerCase())));
     }
 }
